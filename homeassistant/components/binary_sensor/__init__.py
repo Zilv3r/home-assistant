@@ -13,7 +13,8 @@ import voluptuous as vol
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.entity import Entity
 from homeassistant.const import (STATE_ON, STATE_OFF)
-from homeassistant.helpers.config_validation import PLATFORM_SCHEMA  # noqa
+from homeassistant.helpers.config_validation import PLATFORM_SCHEMA
+import homeassistant.helpers.config_validation as cv
 
 DOMAIN = 'binary_sensor'
 SCAN_INTERVAL = timedelta(seconds=30)
@@ -47,6 +48,13 @@ DEVICE_CLASSES = [
 
 DEVICE_CLASSES_SCHEMA = vol.All(vol.Lower, vol.In(DEVICE_CLASSES))
 
+CONF_INVERT = 'invert'
+DEFAULT_CONF_INVERT = False
+
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
+    vol.Optional(CONF_INVERT, default=DEFAULT_CONF_INVERT): cv.boolean,
+})
+
 
 async def async_setup(hass, config):
     """Track states and offer events for binary sensors."""
@@ -70,6 +78,10 @@ async def async_unload_entry(hass, entry):
 class BinarySensorDevice(Entity):
     """Represent a binary sensor."""
 
+     def __init__(self, invert: Optional[bool]:
+        """Initialize the binary sensor."""
+        self._invert = invert
+    
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
@@ -84,3 +96,8 @@ class BinarySensorDevice(Entity):
     def device_class(self):
         """Return the class of this device, from component DEVICE_CLASSES."""
         return None
+
+    @property
+    def invert(self):
+        """Return true if the binary sensor state is inverted, otherwise false."""
+        return self._invert
